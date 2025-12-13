@@ -48,4 +48,22 @@ def authenticate_user(username: str, password: str) -> bool:
     return False
 
 
+
+def login_user(username: str, password: str) -> bool:
+    if not os.path.exists(USER_FILE):
+        return False
+
+    with open(USER_FILE, "r") as file:
+        for line in file:
+            line = line.strip()
+            if not line or ":" not in line:
+                continue
+
+            stored_username, stored_hash = line.split(":", 1)
+
+            if stored_username == username:
+                return verify_password(password, stored_hash.encode("utf-8"))
+
+    return False
+
     
