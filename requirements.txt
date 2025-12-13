@@ -4,3 +4,4 @@ plotly
 bcrypt
 python-dotenv
 openai
+matplotlib

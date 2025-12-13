@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 from pathlib import Path
+from models.cyber_incident import CyberIncident
+from services.cyber_services import CyberIncidentService
+from datetime import datetime
 
 # -------------------------------
 # CONFIG
@@ -13,8 +16,8 @@ USERS_PATH = Path("data/users.csv")
 
 DOMAINS = [
     "Cybersecurity Intelligence",
-    "Domain 2 (Coming Soon)",
-    "Domain 3 (Coming Soon)"
+    "IT Operations",
+    "Data Science"
 ]
 
 # -------------------------------
@@ -171,7 +174,13 @@ def cybersecurity_dashboard():
     )
 
     if action == "View All Incidents":
-        st.dataframe(df, use_container_width=True)
+        incidents = CyberIncidentService.load_all()
+        if incidents:
+            df_view = pd.DataFrame([i.to_dict() for i in incidents])
+            st.dataframe(df_view, use_container_width=True)
+        else:
+            st.info("No incidents found")
+
 
     elif action == "Create Incident":
         with st.form("create_incident"):
@@ -181,17 +190,16 @@ def cybersecurity_dashboard():
             status = st.selectbox("Status", ["Open", "In Progress", "Resolved", "Closed"])
             description = st.text_area("Description")
 
-            if st.form_submit_button("Create"):
-                new_row = {
-                    "incident_id": incident_id,
-                    "timestamp": pd.Timestamp.now(),
-                    "severity": severity,
-                    "category": category,
-                    "status": status,
-                    "description": description
-                }
-                df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-                save_data(df)
+            if st.form_submit_button("Create") :
+                incident = CyberIncident(
+                    incident_id=incident_id,
+                    timestamp=datetime.now(),
+                    severity=severity,
+                    category=category,
+                    status=status,
+                    description=description
+                )
+                CyberIncidentService.add_incident(incident)
                 st.success("Incident created successfully")
 
     elif action == "Update Incident Status":
@@ -199,16 +207,16 @@ def cybersecurity_dashboard():
         new_status = st.selectbox("New Status", ["Open", "In Progress", "Resolved", "Closed"])
 
         if st.button("Update Status"):
-            df.loc[df["incident_id"] == incident_id, "status"] = new_status
-            save_data(df)
-            st.success("Incident status updated")
+           CyberIncidentService.update_incident_status(incident_id, new_status)
+           st.success("Incident status updated")
+
 
     elif action == "Delete Incident":
         incident_id = st.number_input("Incident ID", min_value=1, step=1)
         if st.button("Delete"):
-            df = df[df["incident_id"] != incident_id]
-            save_data(df)
+            CyberIncidentService.delete_incident(incident_id)
             st.success("Incident deleted")
+
 
 # -------------------------------
 # ROUTER

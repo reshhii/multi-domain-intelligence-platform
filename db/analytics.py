@@ -1,32 +1,24 @@
-import sqlite3
+import pandas as pd
+from pathlib import Path
 
-DB_PATH = "db/platform.db"
+CSV_PATH = Path("data/cyber_incidents.csv")
+
+
+def _load_df():
+    if not CSV_PATH.exists():
+        return pd.DataFrame()
+    return pd.read_csv(CSV_PATH)
+
 
 def incidents_by_severity():
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT severity, COUNT(*) AS total
-        FROM cyber_incidents
-        GROUP BY severity
-    """)
-
-    results = cursor.fetchall()
-    conn.close()
-    return results
+    df = _load_df()
+    if df.empty or "severity" not in df.columns:
+        return {}
+    return df["severity"].value_counts().to_dict()
 
 
 def incidents_by_status():
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT status, COUNT(*)
-        FROM cyber_incidents
-        GROUP BY status
-    """)
-
-    results = cursor.fetchall()
-    conn.close()
-    return results
+    df = _load_df()
+    if df.empty or "status" not in df.columns:
+        return {}
+    return df["status"].value_counts().to_dict()
