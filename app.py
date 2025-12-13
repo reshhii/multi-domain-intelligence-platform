@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 
 from auth.auth import register_user, login_user
+from db.analytics import incidents_by_severity, incidents_by_status
 
 
 # --------------------------------------------------
@@ -33,8 +34,8 @@ st.caption("Secure multi-domain analytics system")
 st.write(
     """
     This platform provides analytical insights for multiple technical user groups.
-    The current implementation focuses on **secure authentication** and
-    **cybersecurity incident data exploration**.
+    The current implementation focuses on **secure authentication**, **efficient CSV
+    ingestion using pandas**, and **database-backed analytics using SQLite**.
     """
 )
 
@@ -93,7 +94,7 @@ else:
     st.divider()
 
     # --------------------------------------------------
-    # Cybersecurity Incident Dashboard
+    # Cybersecurity Incident Dataset (CSV → pandas)
     # --------------------------------------------------
     st.subheader("Cybersecurity Incident Dataset")
 
@@ -114,7 +115,7 @@ else:
         st.metric("Total Features", df.shape[1])
 
     with col3:
-        st.metric("Unique Incident Types", df["category"].nunique())
+        st.metric("Unique Incident Categories", df["category"].nunique())
 
     st.divider()
 
@@ -127,14 +128,25 @@ else:
     st.divider()
 
     # --------------------------------------------------
-    # Simple Analytics
+    # Database Analytics (Week 8 – REQUIRED)
     # --------------------------------------------------
+    st.subheader("Database Insights")
+
+    severity_data = incidents_by_severity()
+    status_data = incidents_by_status()
+
+    severity_df = pd.DataFrame(
+        severity_data,
+        columns=["Severity", "Incident Count"]
+    )
+
+    status_df = pd.DataFrame(
+        status_data,
+        columns=["Status", "Incident Count"]
+    )
+
     st.markdown("### Incident Severity Distribution")
+    st.bar_chart(severity_df.set_index("Severity"))
 
-    severity_counts = df["severity"].value_counts()
-    st.bar_chart(severity_counts)
-
-    st.markdown("### Incident Category Distribution")
-
-    category_counts = df["category"].value_counts()
-    st.bar_chart(category_counts)
+    st.markdown("### Incident Status Distribution")
+    st.bar_chart(status_df.set_index("Status"))
