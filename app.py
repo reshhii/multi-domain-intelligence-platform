@@ -1,152 +1,227 @@
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
+from pathlib import Path
 
-from auth.auth import register_user, login_user
-from db.analytics import incidents_by_severity, incidents_by_status
+# -------------------------------
+# CONFIG
+# -------------------------------
+st.set_page_config(page_title="Multi-Domain Intelligence Platform", layout="wide")
 
+DATA_PATH = Path("data/cyber_incidents.csv")
+USERS_PATH = Path("data/users.csv")
 
-# --------------------------------------------------
-# Page configuration
-# --------------------------------------------------
-st.set_page_config(
-    page_title="Unified Intelligence Platform",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+DOMAINS = [
+    "Cybersecurity Intelligence",
+    "Domain 2 (Coming Soon)",
+    "Domain 3 (Coming Soon)"
+]
 
+# -------------------------------
+# SESSION STATE INIT
+# -------------------------------
+for key in ["logged_in", "page", "domain"]:
+    if key not in st.session_state:
+        st.session_state[key] = None
 
-# --------------------------------------------------
-# Session state initialization
-# --------------------------------------------------
-if "authenticated" not in st.session_state:
-    st.session_state["authenticated"] = False
+# -------------------------------
+# USER STORAGE HELPERS
+# -------------------------------
+def load_users():
+    if not USERS_PATH.exists():
+        return pd.DataFrame(columns=["username", "password"])
+    return pd.read_csv(USERS_PATH)
 
-if "username" not in st.session_state:
-    st.session_state["username"] = ""
+def save_users(df):
+    df.to_csv(USERS_PATH, index=False)
 
+# -------------------------------
+# AUTH (FIXED – LOGIC ONLY)
+# -------------------------------
+def login_ui():
+    st.markdown("## 🔐 Welcome")
+    st.caption("Please register or sign in to continue")
 
-# --------------------------------------------------
-# Header
-# --------------------------------------------------
-st.title("Unified Intelligence Platform")
-st.caption("Secure multi-domain analytics system")
-
-st.write(
-    """
-    This platform provides analytical insights for multiple technical user groups.
-    The current implementation focuses on **secure authentication**, **efficient CSV
-    ingestion using pandas**, and **database-backed analytics using SQLite**.
-    """
-)
-
-st.divider()
-
-
-# --------------------------------------------------
-# Authentication Section
-# --------------------------------------------------
-if not st.session_state["authenticated"]:
-
-    st.subheader("Secure Login & Registration")
+    choice = st.radio("Select an option:", ["New User", "Existing User"])
 
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
 
+    users_df = load_users()
+
+    if choice == "New User":
+        if st.button("Register"):
+            if not username or not password:
+                st.error("Username and password are required")
+                return
+
+            if username in users_df["username"].values:
+                st.error("Account already exists. Please login.")
+            else:
+                new_user = pd.DataFrame(
+                    [{"username": username, "password": password}]
+                )
+                users_df = pd.concat([users_df, new_user], ignore_index=True)
+                save_users(users_df)
+                st.success("Registration successful. Please login.")
+
+    else:
+        if st.button("Login"):
+            if not username or not password:
+                st.error("Username and password are required")
+                return
+
+            user_row = users_df[users_df["username"] == username]
+
+            if user_row.empty:
+                st.error("Account not found. Please register first.")
+            elif user_row.iloc[0]["password"] != password:
+                st.error("Incorrect password. Please try again.")
+            else:
+                st.session_state.logged_in = True
+                st.session_state.page = "login_success"
+
+# -------------------------------
+# LOGIN SUCCESS
+# -------------------------------
+def login_success():
+    st.success("✅ Login successful")
+    st.markdown(
+        "This platform allows you to explore insights across multiple domains.\n\n"
+        "**Select a domain to begin.**"
+    )
+    if st.button("Go to Dashboard"):
+        st.session_state.page = "dashboard"
+
+# -------------------------------
+# MAIN DASHBOARD
+# -------------------------------
+def dashboard():
+    st.markdown("# 📊 Main Dashboard")
+    st.caption("Select a domain to explore")
+
+    cols = st.columns(3)
+
+    for i, domain in enumerate(DOMAINS):
+        with cols[i]:
+            st.subheader(domain)
+            if "Cybersecurity" in domain:
+                if st.button("Explore", key=f"domain_{i}"):
+                    st.session_state.domain = domain
+                    st.session_state.page = "cyber"
+            else:
+                st.button("Coming Soon", disabled=True, key=f"disabled_{i}")
+
+# -------------------------------
+# LOAD DATA
+# -------------------------------
+def load_data():
+    if not DATA_PATH.exists():
+        st.error("cyber_incidents.csv not found")
+        return pd.DataFrame()
+    return pd.read_csv(DATA_PATH)
+
+def save_data(df):
+    df.to_csv(DATA_PATH, index=False)
+
+# -------------------------------
+# CYBERSECURITY DOMAIN
+# -------------------------------
+def cybersecurity_dashboard():
+    st.markdown("## 🛡️ Cybersecurity Intelligence")
+    st.caption("Monitor, analyze and manage cyber incidents")
+
+    if st.button("⬅ Back to Main Dashboard"):
+        st.session_state.page = "dashboard"
+        return
+
+    df = load_data()
+
+    # -------------------------------
+    # ANALYTICS
+    # -------------------------------
+    st.markdown("### 📈 Incident Analytics")
+
     col1, col2 = st.columns(2)
 
     with col1:
-        if st.button("Login", use_container_width=True):
-            if login_user(username, password):
-                st.success("Login successful")
-                st.session_state["authenticated"] = True
-                st.session_state["username"] = username
-                st.rerun()
-            else:
-                st.error("Invalid username or password")
+        severity_counts = df["severity"].value_counts()
+        fig, ax = plt.subplots()
+        ax.bar(severity_counts.index, severity_counts.values)
+        ax.set_title("Incidents by Severity")
+        st.pyplot(fig)
 
     with col2:
-        if st.button("Register", use_container_width=True):
-            if register_user(username, password):
-                st.success("Registration successful. You may now log in.")
-            else:
-                st.warning("Username already exists")
+        status_counts = df["status"].value_counts()
+        fig, ax = plt.subplots()
+        ax.bar(status_counts.index, status_counts.values)
+        ax.set_title("Incidents by Status")
+        st.pyplot(fig)
 
+    st.divider()
 
-# --------------------------------------------------
-# Dashboard Section (Visible only after login)
-# --------------------------------------------------
+    # -------------------------------
+    # CRUD
+    # -------------------------------
+    st.markdown("### 🛠️ Incident Management (CRUD)")
+
+    action = st.selectbox(
+        "Choose an action",
+        ["View All Incidents", "Create Incident", "Update Incident Status", "Delete Incident"]
+    )
+
+    if action == "View All Incidents":
+        st.dataframe(df, use_container_width=True)
+
+    elif action == "Create Incident":
+        with st.form("create_incident"):
+            incident_id = st.number_input("Incident ID", min_value=1, step=1)
+            severity = st.selectbox("Severity", ["Low", "Medium", "High", "Critical"])
+            category = st.text_input("Category")
+            status = st.selectbox("Status", ["Open", "In Progress", "Resolved", "Closed"])
+            description = st.text_area("Description")
+
+            if st.form_submit_button("Create"):
+                new_row = {
+                    "incident_id": incident_id,
+                    "timestamp": pd.Timestamp.now(),
+                    "severity": severity,
+                    "category": category,
+                    "status": status,
+                    "description": description
+                }
+                df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+                save_data(df)
+                st.success("Incident created successfully")
+
+    elif action == "Update Incident Status":
+        incident_id = st.number_input("Incident ID", min_value=1, step=1)
+        new_status = st.selectbox("New Status", ["Open", "In Progress", "Resolved", "Closed"])
+
+        if st.button("Update Status"):
+            df.loc[df["incident_id"] == incident_id, "status"] = new_status
+            save_data(df)
+            st.success("Incident status updated")
+
+    elif action == "Delete Incident":
+        incident_id = st.number_input("Incident ID", min_value=1, step=1)
+        if st.button("Delete"):
+            df = df[df["incident_id"] != incident_id]
+            save_data(df)
+            st.success("Incident deleted")
+
+# -------------------------------
+# ROUTER
+# -------------------------------
+if not st.session_state.logged_in:
+    login_ui()
 else:
-    st.success(f"Logged in as **{st.session_state['username']}**")
+    if st.session_state.page is None:
+        st.session_state.page = "login_success"
 
-    if st.button("Logout"):
-        st.session_state["authenticated"] = False
-        st.session_state["username"] = ""
-        st.rerun()
-
-    st.divider()
-
-    # --------------------------------------------------
-    # System Status
-    # --------------------------------------------------
-    st.subheader("System Status")
-    st.success("Environment and dependencies loaded successfully.")
-
-    st.divider()
-
-    # --------------------------------------------------
-    # Cybersecurity Incident Dataset (CSV → pandas)
-    # --------------------------------------------------
-    st.subheader("Cybersecurity Incident Dataset")
-
-    @st.cache_data
-    def load_cyber_data():
-        return pd.read_csv("data/cyber_incidents.csv")
-
-    df = load_cyber_data()
-
-    st.markdown("### Dataset Overview")
-
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.metric("Total Records", df.shape[0])
-
-    with col2:
-        st.metric("Total Features", df.shape[1])
-
-    with col3:
-        st.metric("Unique Incident Categories", df["category"].nunique())
-
-    st.divider()
-
-    # --------------------------------------------------
-    # Data Preview
-    # --------------------------------------------------
-    st.markdown("### Preview of Ingested Data")
-    st.dataframe(df.head(10), use_container_width=True)
-
-    st.divider()
-
-    # --------------------------------------------------
-    # Database Analytics (Week 8 – REQUIRED)
-    # --------------------------------------------------
-    st.subheader("Database Insights")
-
-    severity_data = incidents_by_severity()
-    status_data = incidents_by_status()
-
-    severity_df = pd.DataFrame(
-        severity_data,
-        columns=["Severity", "Incident Count"]
-    )
-
-    status_df = pd.DataFrame(
-        status_data,
-        columns=["Status", "Incident Count"]
-    )
-
-    st.markdown("### Incident Severity Distribution")
-    st.bar_chart(severity_df.set_index("Severity"))
-
-    st.markdown("### Incident Status Distribution")
-    st.bar_chart(status_df.set_index("Status"))
+    if st.session_state.page == "login_success":
+        login_success()
+    elif st.session_state.page == "dashboard":
+        dashboard()
+    elif st.session_state.page == "cyber":
+        cybersecurity_dashboard()

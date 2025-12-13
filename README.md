@@ -49,6 +49,7 @@ cybersecurity incidents and IT service management data.
 - CRUD-ready database structure
 - Analytical SQL queries for extracting insights
 - Integration of database analytics into the Streamlit dashboard
+- Explicit CRUD (Create, Read, Update, Delete) operations implemented using parameterized SQL queries
 
 ### Datasets Used
 - `cyber_incidents.csv`
