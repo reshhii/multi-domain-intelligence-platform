@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from models.cyber_incident import CyberIncident
 from services.cyber_services import CyberIncidentService
+from services.cyber_analytics import CyberAnalyticsService
 from datetime import datetime
 
 # -------------------------------
@@ -160,6 +161,27 @@ def cybersecurity_dashboard():
         ax.bar(status_counts.index, status_counts.values)
         ax.set_title("Incidents by Status")
         st.pyplot(fig)
+
+        # -------------------------------
+    # INTELLIGENT DASHBOARD (WEEK 10)
+    # -------------------------------
+    st.markdown("### 🧠 Cybersecurity Intelligence Summary")
+    st.caption("Automated analysis and AI-assisted decision support")
+
+    kpis = CyberAnalyticsService.compute_kpis(df)
+
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Total Incidents", kpis["total"])
+    col2.metric("Open Incidents", kpis["open"])
+    col3.metric("Critical Incidents", kpis["critical"])
+    col4.metric("Resolution Rate (%)", kpis["resolution_rate"])
+
+    risk = CyberAnalyticsService.risk_score(df)
+    st.markdown(f"**Overall Cyber Risk Level:** `{risk}`")
+
+    st.markdown("### 🤖 AI-Generated Insights")
+    for insight in CyberAnalyticsService.ai_insights(df):
+        st.info(insight)
 
     st.divider()
 
