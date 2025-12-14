@@ -16,6 +16,3 @@ class CyberIncident:
             "status": self.status,
             "description": self.description
         }
-
-    def update_status(self, new_status):
-        self.status = new_status

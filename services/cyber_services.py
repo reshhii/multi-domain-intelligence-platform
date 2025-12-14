@@ -18,38 +18,36 @@ class CyberIncidentService:
         for _, row in df.iterrows():
             incidents.append(
                 CyberIncident(
-                    row["incident_id"],
-                    row["timestamp"],
-                    row["severity"],
-                    row["category"],
-                    row["status"],
-                    row["description"]
+                    incident_id=row["incident_id"],
+                    timestamp=row["timestamp"],
+                    severity=row["severity"],
+                    category=row["category"],
+                    status=row["status"],
+                    description=row["description"]
                 )
             )
-
         return incidents
 
     @staticmethod
-    def save_all(incidents):
-        df = pd.DataFrame([i.to_dict() for i in incidents])
+    def add_incident(incident: CyberIncident):
+        df = pd.read_csv(DATA_PATH) if DATA_PATH.exists() else pd.DataFrame()
+        df = pd.concat([df, pd.DataFrame([incident.to_dict()])], ignore_index=True)
         df.to_csv(DATA_PATH, index=False)
 
     @staticmethod
-    def add_incident(incident):
-        incidents = CyberIncidentService.load_all()
-        incidents.append(incident)
-        CyberIncidentService.save_all(incidents)
-
-    @staticmethod
     def update_incident_status(incident_id, new_status):
-        incidents = CyberIncidentService.load_all()
-        for incident in incidents:
-            if incident.incident_id == incident_id:
-                incident.update_status(new_status)
-        CyberIncidentService.save_all(incidents)
+        if not DATA_PATH.exists():
+            return
+
+        df = pd.read_csv(DATA_PATH)
+        df.loc[df["incident_id"] == incident_id, "status"] = new_status
+        df.to_csv(DATA_PATH, index=False)
 
     @staticmethod
     def delete_incident(incident_id):
-        incidents = CyberIncidentService.load_all()
-        incidents = [i for i in incidents if i.incident_id != incident_id]
-        CyberIncidentService.save_all(incidents)
+        if not DATA_PATH.exists():
+            return
+
+        df = pd.read_csv(DATA_PATH)
+        df = df[df["incident_id"] != incident_id]
+        df.to_csv(DATA_PATH, index=False)
