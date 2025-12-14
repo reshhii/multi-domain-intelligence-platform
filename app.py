@@ -6,6 +6,7 @@ from models.cyber_incident import CyberIncident
 from services.cyber_services import CyberIncidentService
 from services.cyber_analytics import CyberAnalyticsService
 from datetime import datetime
+from services.ai_insights_services import AIInsightsService
 
 
 # -------------------------------
@@ -200,25 +201,65 @@ def cybersecurity_dashboard():
 
     trend_df = CyberAnalyticsService.incidents_over_time(df)
 
+    # ---------- INCIDENT TREND VISUALIZATION ----------
     if not trend_df.empty:
-        fig, ax = plt.subplots(figsize=(5,3))
-        ax.plot(trend_df["date"], trend_df["count"], marker="o")
-        ax.set_title("Incidents Over Time")
-        ax.set_xlabel("Date")
-        ax.set_ylabel("Number of Incidents")
-        plt.tight_layout()
-        st.pyplot(fig)
+
+        col_trend, _ = st.columns([1, 1])
+
+        with col_trend:
+           fig, ax = plt.subplots(figsize=(4.5, 3.0))
+
+           ax.plot(
+               trend_df["date"],
+               trend_df["count"],
+               marker="o",
+               linewidth=2
+           )
+
+           ax.set_title("Incidents Over Time", fontsize=11)
+           ax.set_xlabel("Date", fontsize=9)
+           ax.set_ylabel("Number of Incidents", fontsize=9)
+
+           ax.tick_params(axis="x", labelsize=8, rotation=45)
+           ax.tick_params(axis="y", labelsize=8)
+
+           plt.tight_layout()
+           st.pyplot(fig, use_container_width=False)
 
         interpretation = CyberAnalyticsService.interpret_trends(trend_df)
         st.info(interpretation)
+
     else:
-        st.info("Not enough data available to display incident trends.")
+        st.info("Not enough data available to display incident trends")
+
 
     severity_dist = CyberAnalyticsService.severity_distribution(df)
     if severity_dist:
         st.markdown("**Severity Distribution**")
         for sev, count in severity_dist.items():
             st.write(f"- {sev}: {count} incidents")
+
+        # -------------------------------
+    # AI-ASSISTED INSIGHTS (WEEK 12)
+    # -------------------------------
+    st.divider()
+    st.markdown("### 🤖 AI-Assisted Security Insights")
+    st.caption("Automated risk assessment and decision support")
+
+    insights = AIInsightsService.generate_insights(df)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.metric("Risk Level", insights.get("risk_level", "N/A"))
+        st.write(insights.get("risk_reason", ""))
+
+    with col2:
+        st.metric("Operational Health", insights.get("operational_health", "N/A"))
+        st.write(insights.get("operations_reason", ""))
+
+    st.info(f"📌 **AI Recommendation:** {insights.get('recommendation', '')}")
+
 
     # -------------------------------
     # CRUD
