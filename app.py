@@ -151,16 +151,22 @@ def cybersecurity_dashboard():
 
     with col1:
         severity_counts = df["severity"].value_counts()
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(5,3))
         ax.bar(severity_counts.index, severity_counts.values)
         ax.set_title("Incidents by Severity")
+        ax.title.set_size(11)
+        ax.tick_params(axis="both", labelsize=9)
+        plt.tight_layout()
         st.pyplot(fig)
 
     with col2:
         status_counts = df["status"].value_counts()
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(5,3))
         ax.bar(status_counts.index, status_counts.values)
         ax.set_title("Incidents by Status")
+        ax.title.set_size(11)
+        ax.tick_params(axis="both", labelsize=9)
+        plt.tight_layout()
         st.pyplot(fig)
 
         # -------------------------------
@@ -195,11 +201,12 @@ def cybersecurity_dashboard():
     trend_df = CyberAnalyticsService.incidents_over_time(df)
 
     if not trend_df.empty:
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(5,3))
         ax.plot(trend_df["date"], trend_df["count"], marker="o")
         ax.set_title("Incidents Over Time")
         ax.set_xlabel("Date")
         ax.set_ylabel("Number of Incidents")
+        plt.tight_layout()
         st.pyplot(fig)
 
         interpretation = CyberAnalyticsService.interpret_trends(trend_df)
