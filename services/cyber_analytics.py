@@ -54,3 +54,43 @@ class CyberAnalyticsService:
             )
 
         return insights
+    
+
+    @staticmethod
+    def incidents_over_time(df: pd.DataFrame):
+        if df.empty:
+            return pd.DataFrame()
+
+        df_copy = df.copy()
+        df_copy["timestamp"] = pd.to_datetime(df_copy["timestamp"])
+        df_copy["date"] = df_copy["timestamp"].dt.date
+
+        trend = df_copy.groupby("date").size().reset_index(name="count")
+        return trend
+
+    @staticmethod
+    def severity_distribution(df: pd.DataFrame):
+        if df.empty:
+            return {}
+
+        return df["severity"].value_counts().to_dict()
+
+    @staticmethod
+    def interpret_trends(trend_df: pd.DataFrame):
+        if trend_df.empty:
+            return "No trend data available for interpretation."
+
+        if len(trend_df) >= 2:
+            if trend_df.iloc[-1]["count"] > trend_df.iloc[0]["count"]:
+                return (
+                    "Incident frequency shows an increasing trend over time, "
+                    "which may indicate growing threat activity or improved detection."
+                )
+            else:
+                return (
+                    "Incident frequency appears stable or decreasing, "
+                    "suggesting improved security posture or reduced threat activity."
+                )
+
+        return "Insufficient data points to determine a clear trend."
+

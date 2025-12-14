@@ -7,6 +7,7 @@ from services.cyber_services import CyberIncidentService
 from services.cyber_analytics import CyberAnalyticsService
 from datetime import datetime
 
+
 # -------------------------------
 # CONFIG
 # -------------------------------
@@ -184,6 +185,33 @@ def cybersecurity_dashboard():
         st.info(insight)
 
     st.divider()
+
+        # -------------------------------
+    # ADVANCED ANALYTICS & TRENDS (WEEK 11)
+    # -------------------------------
+    st.markdown("### 📊 Incident Trends and Analysis")
+    st.caption("Temporal and severity-based analysis of cybersecurity incidents")
+
+    trend_df = CyberAnalyticsService.incidents_over_time(df)
+
+    if not trend_df.empty:
+        fig, ax = plt.subplots()
+        ax.plot(trend_df["date"], trend_df["count"], marker="o")
+        ax.set_title("Incidents Over Time")
+        ax.set_xlabel("Date")
+        ax.set_ylabel("Number of Incidents")
+        st.pyplot(fig)
+
+        interpretation = CyberAnalyticsService.interpret_trends(trend_df)
+        st.info(interpretation)
+    else:
+        st.info("Not enough data available to display incident trends.")
+
+    severity_dist = CyberAnalyticsService.severity_distribution(df)
+    if severity_dist:
+        st.markdown("**Severity Distribution**")
+        for sev, count in severity_dist.items():
+            st.write(f"- {sev}: {count} incidents")
 
     # -------------------------------
     # CRUD
