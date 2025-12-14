@@ -1,145 +1,71 @@
-# Multi-Domain Intelligence Platform
 
-**Student Name:**  Reshika Sahadew
-**Course Title:** BSc Computer Science (Systems Engineering)
-**Module Code:** CST1510
+Multi-Domain Intelligence Platform
 
-## Project Overview
-This project implements a **Multi-Domain Intelligence Platform** developed using Python and Streamlit.  
-The platform is designed to ingest, process, analyse, and interpret structured datasets in order to support **data-driven decision making** across multiple technical domains.
+CST1510 – Coursework 2
 
-The primary implementation focuses on the **Cybersecurity Intelligence domain**, developed incrementally according to the coursework specification from **Week 7 to Week 12**, integrating software engineering principles, analytics, and AI-assisted insights.
+Student Name: Reshika Sahadew
+Student ID: M01082029
+Programme: BSc Computer Science (Systems Engineering)
 
----
+Overview
 
-## Project Objectives
-- Apply structured software development practices
-- Demonstrate Object-Oriented Programming (OOP)
-- Implement full CRUD functionality with persistent storage
-- Perform descriptive and trend-based data analytics
-- Integrate AI-style decision support and interpretation
-- Demonstrate both **theoretical understanding** and **practical implementation**
+This project implements a Multi-Domain Intelligence Platform using Python and Streamlit. The system provides secure access, analytics, visualisation, CRUD operations, and AI-assisted insights across multiple technical domains.
 
----
+The primary implemented domains are:
 
-## Technologies Used
-- Python 3
-- Streamlit
-- Pandas
-- Matplotlib
-- Git & GitHub
+Cybersecurity Intelligence
 
----
+IT Operations
 
-## System Architecture
-The system follows a **layered, modular architecture** to ensure maintainability, scalability, and clarity.
+The platform transforms structured datasets into actionable insights while demonstrating secure software practices and modular system design.
 
-models/ → Data models using OOP
-services/ → Business logic, analytics, and AI reasoning
-data/ → Persistent structured data storage (CSV)
-app.py → Streamlit user interface and controller
-README.md → Project documentation
+Key Features
+Security (Week 7)
 
+User authentication with password hashing
 
-### Architectural Layers
-- **Model Layer**  
-  Defines structured data entities (e.g. CyberIncident)
+Input validation and error handling
 
-- **Service Layer**  
-  Handles CRUD operations, analytics, trend computation, and AI-assisted insights.
+Data Handling & CRUD (Week 8)
 
-- **Presentation Layer**  
-  Streamlit-based interface for interaction, visualisation, and decision support.
+CSV ingestion using Pandas
 
----
+Full CRUD functionality for Cybersecurity and IT domains
 
-## Weekly Implementation Summary
+Modular Design & OOP (Week 9)
 
-### Week 7 – Environment Setup & Foundations
-- Python environment configuration
-- Installation of required libraries
-- Project folder structure setup
-- Version control initialization using Git
-- Introduction to Streamlit for UI development
+Domain models and service layers
 
----
+Clear separation between UI, analytics, and data
 
-### Week 8 – Core Platform & CRUD Operations
-- Dataset ingestion from CSV files
-- Dashboard layout and navigation
-- Full CRUD functionality (Create, Read, Update, Delete)
-- Initial data visualisation (incident severity and status)
+Analytics & Visualisation (Weeks 10–11)
 
----
+KPIs and risk indicators
 
-### Week 9 – Software Engineering & OOP
-- Object-Oriented Programming using dedicated model classes
-- Separation of concerns via service layers
-- Refactoring logic out of the UI layer
-- Improved code maintainability and modularity
+Trend analysis and time-based aggregation
 
----
+Matplotlib visualisations
 
-### Week 10 – Intelligent Dashboard & KPIs
-- Implementation of Key Performance Indicators (KPIs)
-- Aggregated metrics for operational monitoring
-- Risk scoring logic for cybersecurity incidents
-- Enhanced dashboard presentation and structure
+AI-Assisted Insights (Weeks 10–12)
 
----
+Rule-based AI interpretations
 
-### Week 11 – Advanced Analytics & Trend Analysis
-- Time-based analysis of cybersecurity incidents
-- Trend visualisation using line charts
-- Severity distribution analysis
-- Analytical interpretation of observed trends
+OpenAI API integration with fallback mechanism
 
----
+Database Integration
 
-### Week 12 – AI-Assisted Insights & Evaluation
-- Automated risk and operational health assessment
-- AI-style insight generation using explainable rule-based logic
-- Decision support recommendations
-- Fully integrated and polished cybersecurity intelligence dashboard
+SQLite database integration
 
----
+CSV-to-SQL migration script provided
 
-## AI and Analytics Approach
-The platform integrates **AI-assisted analytics** using transparent, rule-based logic rather than complex machine learning models.  
-This approach ensures interpretability, academic defensibility, and meaningful decision support.
+Technologies Used
 
-Examples include:
-- Cyber risk level assessment
-- Incident response health evaluation
-- Automated recommendations for mitigation and prioritisation
+Python, Streamlit, Pandas, Matplotlib, SQLite, bcrypt, OpenAI API
 
----
-
-## Data Persistence and Database Concept
-Cybersecurity incident data is stored using **structured CSV files**, designed to mirror relational database tables.  
-All data access and manipulation are abstracted through a service layer, providing full CRUD functionality and enabling seamless migration to a SQL-based database if required.
-
----
-
-## How to Run the Application
-
-1. Clone the repository:
-   ```bash
-   git clone <repository-url>
-
-2. Navigate to the project directory:
-
-cd multi-domain-intelligence-platform
-
-
-3. Install dependencies:
-
+How to Run
 pip install -r requirements.txt
-
-
-4. Run the application:
-
 streamlit run app.py
 
+Conclusion
 
-
+This platform demonstrates secure authentication, analytics, AI integration, and modular software engineering practices aligned with coursework requirements.

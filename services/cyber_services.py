@@ -15,17 +15,21 @@ class CyberIncidentService:
         df = pd.read_csv(DATA_PATH)
         incidents = []
 
+        if df.empty:
+            return []
+        
+        incidents = []
+
         for _, row in df.iterrows():
-            incidents.append(
-                CyberIncident(
-                    incident_id=row["incident_id"],
-                    timestamp=row["timestamp"],
-                    severity=row["severity"],
-                    category=row["category"],
-                    status=row["status"],
-                    description=row["description"]
-                )
+            incident = CyberIncident (
+                incident_id=row["incident_id"],
+                timestamp=pd.to_datetime(row["timestamp"]),
+                severity=row["severity"],
+                category=row["category"],
+                status=row["status"],
+                description=row["description"]
             )
+            incidents.append(incident)
         return incidents
 
     @staticmethod
